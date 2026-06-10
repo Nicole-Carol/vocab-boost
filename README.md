@@ -109,7 +109,7 @@ Para permitir acesso de outros dispositivos na rede (ex: celular):
 
 bash
 uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-Anote o IP do seu computador (ex: 192.168.0.10) para acessar o frontend pelo celular.
+Anote o IP do seu computador (ex: 192.168.*.**) para acessar o frontend pelo celular.
 
 3️⃣ Frontend (HTML/CSS/JS)
 O frontend é totalmente estático e pode ser servido pelo próprio FastAPI (se você adicionou StaticFiles no backend) ou por qualquer servidor HTTP simples.
