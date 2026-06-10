@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>English Reader & Translator</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#D4AF37">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* ========== ESTILOS (mantidos originais + ajustes) ========== */
+        .menu-tres-pontos-rev i {
+            color: #D4AF37 !important;
+            background: rgba(0,0,0,0.5) !important;
+            border-radius: 50% !important;
+            padding: 8px !important;
+            font-size: 1.5rem !important;
+        }
+        .flashcard-card {
+            min-height: 280px;
+            transform-style: preserve-3d;
+        }
+        .flashcard-central {
+            background: rgba(180, 210, 240, 0.04) !important;
+        }
+        .flashcard-front h2, .flashcard-back h3 {
+            color: #D4AF37 !important;
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+        }
+        .flashcard-front p, .flashcard-back p {
+            color: #ffffff !important;
+            font-size: 1rem;
+        }
+        .progresso-card, .dashboard-container, .stats-container {
+            background: rgba(255, 255, 255, 0.25) !important;
+            color: #111 !important;
+        }
+        .progresso-card .stat, .dashboard-container, .stats-container {
+            color: #111 !important;
+        }
+        .rapida-controls label, .dictation-mode-selector label, 
+        .quiz-pergunta, .dictation-pergunta, .quiz-contador, .dictation-contador,
+        .regras-area em, .regras-area .empty-message, .regras-area h4 {
+            color: white !important;
+        }
+        .mode-btn {
+            background: rgba(255,255,255,0.2);
+            color: white !important;
+        }
+        .mode-btn.active {
+            background: #D4AF37;
+            color: #0f172a !important;
+        }
+        .dictation-input::placeholder {
+            color: #444 !important;
+        }
+        .quiz-contador, .dictation-contador {
+            color: white !important;
+        }
+        .revision-area-central p {
+            color: #ffffff !important;
+        }
+        .pdf-input {
+            color: #fff !important;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 8px;
+            padding: 8px;
+            border: none;
+            cursor: pointer;
+        }
+        .pdf-input::file-selector-button {
+            background-color: #D4AF37;
+            color: #0f172a;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .pdf-input::file-selector-button:hover {
+            background-color: #c5a12e;
+        }
+        #add-tab .form-card,
+        #list-tab .busca-container,
+        #list-tab .flashcard-central,
+        #rapida-tab .quiz-container,
+        #escrita-tab .escrita-container {
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            border: none !important;
+            backdrop-filter: none !important;
+        }
+        #add-tab .form-card h2,
+        #add-tab .form-card label {
+            color: #ffffff !important;
+        }
+        #add-tab .form-card input,
+        #add-tab .form-card textarea,
+        #add-tab .form-card select,
+        #list-tab .busca-container input,
+        #rapida-tab .quiz-container select,
+        #rapida-tab .quiz-container .dictation-input,
+        #escrita-tab .escrita-container input,
+        #escrita-tab .escrita-container textarea {
+            color: #000000 !important;
+            background-color: rgba(255, 255, 255, 0.9) !important;
+        }
+        #add-tab .form-card input::placeholder,
+        #add-tab .form-card textarea::placeholder,
+        #list-tab .busca-container input::placeholder,
+        #rapida-tab .quiz-container .dictation-input::placeholder,
+        #escrita-tab .escrita-container textarea::placeholder {
+            color: #333333 !important;
+        }
+        #add-tab .form-card select option,
+        #rapida-tab .quiz-container select option {
+            color: #000000 !important;
+            background-color: white;
+        }
+        #add-tab .form-card .btn-salvar,
+        #list-tab .busca-container .btn-buscar {
+            background-color: #D4AF37;
+            color: #0f172a !important;
+        }
+        #list-tab .revisao-btn.esqueci {
+            background-color: #ffb3b3 !important;
+            color: #8b0000 !important;
+        }
+        #list-tab .revisao-btn.dificil {
+            background-color: #fff3b3 !important;
+            color: #8b7300 !important;
+        }
+        #list-tab .revisao-btn.facil {
+            background-color: #b3ffb3 !important;
+            color: #006400 !important;
+        }
+        select option:hover,
+        select option:focus,
+        select option:checked {
+            background-color: #3498db !important;
+            color: white !important;
+        }
+        .menu-dropdown-rev {
+            background: rgba(30,30,40,0.95) !important;
+            color: white !important;
+        }
+        .menu-dropdown-rev .dropdown-info,
+        .menu-dropdown-rev label,
+        .menu-dropdown-rev .dropdown-mover label,
+        .menu-dropdown-rev .dropdown-anotacoes label,
+        .menu-dropdown-rev input,
+        .menu-dropdown-rev textarea {
+            color: white !important;
+        }
+        .menu-dropdown-rev input,
+        .menu-dropdown-rev textarea {
+            background: rgba(50,50,70,0.9) !important;
+            border: 1px solid #D4AF37 !important;
+        }
+        .menu-dropdown-rev .btn-pequeno {
+            background: #D4AF37;
+            color: #0f172a !important;
+        }
+        .menu-dropdown-rev button {
+            color: white !important;
+        }
+        .daily-goal {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+            background: rgba(0,0,0,0.4);
+            padding: 5px 15px;
+            border-radius: 40px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .daily-goal span {
+            color: #D4AF37;
+            font-weight: 500;
+        }
+        .progress-bar-container {
+            width: 200px;
+            height: 10px;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #D4AF37;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        .goal-count {
+            font-size: 0.9rem;
+            color: white;
+        }
+        .btn-falar {
+            background-color: #D4AF37;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+            color: #0f172a;
+        }
+        .escrita-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px;
+            border-radius: 24px;
+            text-align: center;
+        }
+        .escrita-container h3 {
+            color: #D4AF37;
+            margin-bottom: 20px;
+        }
+        .frase-original-box {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 16px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        .frase-original-box strong, .frase-original-box span, .frase-original-box button {
+            color: white !important;
+        }
+        .palavra-lacuna {
+            display: inline-block;
+            min-width: 80px;
+            margin: 0 4px;
+        }
+        .palavra-lacuna input {
+            width: 100px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid #D4AF37;
+            background: #fff;
+            color: #000;
+            text-align: center;
+        }
+        .regras-area {
+            background: rgba(0,0,0,0.4);
+            border-radius: 16px;
+            padding: 15px;
+            margin-top: 25px;
+            text-align: left;
+        }
+        .regra-item {
+            background: rgba(255,255,255,0.1);
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        .btn-play {
+            background-color: #D4AF37;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .btn-pequeno {
+            background-color: #555;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .verificar-btn {
+            background-color: #D4AF37;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .correcao-resultado {
+            background: rgba(0,0,0,0.6);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: left;
+            color: #e0e0e0;
+            margin-top: 15px;
+        }
+        .correcao-item {
+            border-left: 3px solid #e74c3c;
+            padding-left: 12px;
+            margin-bottom: 12px;
+        }
+        .correcao-sugestao {
+            color: #f1c40f;
+        }
+        .audio-btn, .audio-btn-play {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #D4AF37;
+            font-weight: bold;
+        }
+        #popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            border-radius: 16px;
+            z-index: 2000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            border: 1px solid #D4AF37;
+        }
+        #popup.hidden { display: none; }
+        #popup-header { padding: 12px; border-bottom: 1px solid #D4AF37; display: flex; justify-content: space-between; }
+        #popup-content { padding: 12px; max-height: 400px; overflow-y: auto; color: white; }
+        #popup-footer { padding: 10px; border-top: 1px solid #D4AF37; margin-top: 10px; }
+        .feedback-message { position: fixed; bottom: 20px; right: 20px; z-index: 2001; padding: 8px 16px; border-radius: 20px; font-weight: bold; animation: fadeOut 2s forwards; }
+        .feedback-success { background-color: #2ecc71; color: #0f172a; }
+        .feedback-error { background-color: #e74c3c; color: white; }
+        @keyframes fadeOut { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+
+        /* ========== NOVOS ESTILOS PARA PDF (imagem nítida + parágrafos grandes/negrito) ========== */
+        .pdf-page-card {
+            overflow-x: auto;
+            margin-bottom: 25px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .pagina-pdf {
+            display: block;
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            margin: 0 auto 15px auto;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            image-rendering: auto;
+        }
+        .pdf-texto-pagina {
+            padding: 10px 5px;
+        }
+        .pdf-texto-pagina p {
+            margin-bottom: 1.3em;
+            line-height: 1.8;
+            text-align: justify;
+            font-weight: bold !important;
+            font-size: 1.4rem !important;
+            color: #ffffff !important;   /* ALTERADO PARA BRANCO */
+        }
+        /* Estilos para listagem paginada de frases (cor branca) */
+        #lista-frases-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            text-align: left;
+        }
+        .frase-lista-item {
+            padding: 8px;
+            border-bottom: 1px solid #555;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white !important;
+        }
+        .frase-lista-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .pagina-btn {
+            background: #D4AF37;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin: 2px;
+            cursor: pointer;
+            color: #0f172a;
+        }
+        .proxima-btn {
+            background: #27ae60;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu idêntico ao original -->
+    <header class="top-nav">
+        <div class="nav-brand"><img src="/logo.png" alt="Logo" onerror="this.style.display='none'"><span>English Reader</span></div>
+        <nav class="horizontal-menu">
+            <div class="nav-link" data-view="pdf-tab"><i class="fas fa-file-pdf"></i> <span>Ler PDF</span></div>
+            <div class="nav-link" data-view="add-tab"><i class="fas fa-plus"></i> <span>Adicionar</span></div>
+            <div class="nav-link" data-view="list-tab"><i class="fas fa-database"></i> <span>Minhas Palavras</span></div>
+            <div class="dropdown"><div class="nav-link dropdown-btn"><i class="fas fa-chart-simple"></i> <span>Progresso <i class="fas fa-chevron-down"></i></span></div>
+                <div class="dropdown-content"><div class="nav-link" data-view="progresso-tab">Meu Progresso</div><div class="nav-link" data-view="dashboard-tab">Dashboard</div><div class="nav-link" data-view="stats-tab">Estatísticas</div></div>
+            </div>
+            <div class="dropdown"><div class="nav-link dropdown-btn-revisao"><i class="fas fa-clock"></i> <span>Revisão <i class="fas fa-chevron-down"></i></span></div>
+                <div class="dropdown-content" id="revisao-dropdown"><div class="nav-link" data-view="rapida-tab">Revisão Rápida</div><div class="nav-link" data-view="escrita-tab">Escrita</div></div>
+            </div>
+        </nav>
+        <div class="nav-actions"></div>
+    </header>
+
+    <div class="main-content">
+        <div class="daily-goal" id="daily-goal-bar"><span>📅 Meta diária:</span><div class="progress-bar-container"><div class="progress-bar-fill" id="goal-progress-fill"></div></div><span class="goal-count" id="goal-count-text">0/10 revisões</span></div>
+
+        <!-- ABA PDF -->
+        <div id="pdf-tab" class="tab-content"><div class="pdf-centralizado"><div class="pdf-controls"><label for="pdf-deck-select">Deck para este PDF:</label><select id="pdf-deck-select"><option value="">Nenhum (sem deck)</option></select><div class="btn-group"><button class="btn btn-novo-deck" onclick="criarDeck('pdf')">+ Novo Deck</button><button class="btn btn-editar" onclick="editarDeck('pdf')">Editar</button><button class="btn btn-excluir" onclick="excluirDeck('pdf')">Excluir</button></div></div><input type="file" id="pdf-upload" accept="application/pdf" class="pdf-input"><div id="pdf-pages-container" class="pdf-pages"></div></div></div>
+
+        <!-- ABA ADICIONAR -->
+        <div id="add-tab" class="tab-content"><div class="form-card"><h2>Adicionar Palavra ou Frase</h2><select id="deck-select" style="width:100%; margin-bottom:10px;"><option value="">Nenhum deck selecionado</option></select><div class="btn-group" style="justify-content:center; margin-top:0; margin-bottom:15px;"><button class="btn btn-novo-deck" onclick="criarDeck('add')">+ Novo Deck</button><button class="btn btn-editar" onclick="editarDeck('add')">Editar</button><button class="btn btn-excluir" onclick="excluirDeck('add')">Excluir</button></div><input type="text" id="termo" placeholder="Termo em inglês (ex: breakdown)"><textarea id="frase" placeholder="Frase de contexto (opcional)" rows="3"></textarea><button class="btn-salvar" onclick="adicionarPalavra()">Traduzir e Salvar</button><div id="form-resultado"></div></div></div>
+
+        <!-- ABA MINHAS PALAVRAS -->
+        <div id="list-tab" class="tab-content"><div class="busca-container"><input type="text" id="busca-palavra-flash" placeholder="🔍 Digite a palavra em inglês..."><button id="btn-buscar-flash" class="btn-buscar">Buscar</button></div><div id="flashcard-revisao" class="flashcard-revisao-central"></div><div id="flashcard-status" class="flashcard-status"></div></div>
+
+        <!-- ABA PROGRESSO -->
+        <div id="progresso-tab" class="tab-content"><div class="progresso-card"><h2>Meu Progresso</h2><p class="stat">Pontos: <strong id="p-pontos">-</strong></p><p class="stat">Streak: <strong id="p-streak">-</strong> dias consecutivos</p><p class="stat">Nível: <strong id="p-nivel">-</strong></p><p class="stat">Total de revisões: <strong id="p-revisoes">-</strong></p><p class="stat" id="p-proximo-nivel" style="display:none;">Faltam <strong id="p-faltam"></strong> pontos para o nível <strong id="p-nivel-seguinte"></strong></p><div class="progresso-barra"><div class="progresso-preenchimento" id="barra-nivel"></div></div></div></div>
+
+        <!-- ABA DASHBOARD -->
+        <div id="dashboard-tab" class="tab-content"><div class="dashboard-container"><h2>Revisões nos últimos 30 dias</h2><canvas id="grafico-revisoes"></canvas></div></div>
+
+        <!-- ABA ESTATÍSTICAS -->
+        <div id="stats-tab" class="tab-content"><div class="stats-container"><h2>Estatísticas Avançadas</h2><div class="stats-grid"><div class="stats-card"><h3>Acertos por Deck</h3><canvas id="acertos-deck-chart"></canvas></div><div class="stats-card"><h3>Evolução de Pontos (30 dias)</h3><canvas id="evolucao-pontos-chart"></canvas></div></div></div></div>
+
+        <!-- ABA REVISÃO RÁPIDA -->
+        <div id="rapida-tab" class="tab-content"><div class="quiz-container"><div class="mode-toggle"><button class="mode-btn active" data-mode="quiz" onclick="setRevisionMode('quiz')">Quiz</button><button class="mode-btn" data-mode="dictation" onclick="setRevisionMode('dictation')">Ditado</button></div><div class="rapida-controls"><label>Deck:</label><select id="rapida-deck-select"><option value="">Todos os decks</option></select><div class="btn-group"><button class="btn btn-novo-deck" onclick="criarDeck('rapida')">+ Novo Deck</button><button class="btn btn-editar" onclick="editarDeck('rapida')">Editar</button><button class="btn btn-excluir" onclick="excluirDeck('rapida')">Excluir</button></div><button onclick="carregarRevisaoRapida()" class="btn-iniciar">Iniciar</button></div><div id="revision-area" class="revision-area-central"><p>Selecione um deck e clique em "Iniciar"</p></div></div></div>
+
+        <!-- ABA ESCRITA -->
+        <div id="escrita-tab" class="tab-content">
+            <div class="escrita-container">
+                <h3>✍️ Prática de Escrita com Frases dos Livros</h3>
+                <div><label>Deck: </label><select id="escrita-deck-select"></select>
+                    <button id="carregar-frase-deck" class="verificar-btn">📖 Carregar frase do deck</button>
+                    <button id="buscar-frase-btn" class="btn-pequeno">🔍 Buscar frase</button>
+                </div>
+                <div id="frase-original-area" class="frase-original-box" style="display:none;">
+                    <strong>Frase original:</strong> <span id="frase-original-texto" style="color:white;"></span>
+                    <button id="play-frase-original" class="btn-play">Play</button>
+                    <div><button id="criar-lacunas-btn" class="btn-pequeno">Criar lacunas</button></div>
+                </div>
+                <div id="escrita-input-area">
+                    <textarea id="frase-escrita" rows="4" placeholder="Escreva aqui a frase..."></textarea>
+                    <button id="comparar-frase-btn" class="verificar-btn">🔍 Comparar com original</button>
+                    <button id="proxima-frase-btn" class="verificar-btn proxima-btn">⏩ Próxima frase</button>
+                </div>
+                <div id="resultado-correcao" class="correcao-resultado" style="display:none;"></div>
+
+                <div class="regras-area" style="margin-top:20px;">
+                    <h4>📖 Frases do deck</h4>
+                    <div><input type="text" id="busca-frases" placeholder="Buscar frase..." style="width:70%;"><button id="buscar-lista-btn" class="btn-pequeno">Buscar</button></div>
+                    <div id="lista-frases-container"></div>
+                    <div id="paginacao-container" style="margin-top:10px;"></div>
+                </div>
+
+                <div class="regras-area">
+                    <h4>📘 Minhas Regras Gramaticais</h4>
+                    <div><input type="text" id="nova-regra-padrao" placeholder="Padrão (ex: he go)" style="width:30%"><input type="text" id="nova-regra-sugestao" placeholder="Sugestão (ex: he goes)" style="width:30%"><input type="text" id="nova-regra-explicacao" placeholder="Explicação" style="width:30%"><button id="adicionar-regra-btn" class="btn-pequeno">➕ Adicionar regra</button></div>
+                    <div id="lista-regras"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup" class="hidden">
+        <div id="popup-header"><strong>Análise</strong><button onclick="fecharPopup()">✕</button></div>
+        <div id="popup-content"></div>
+        <div id="popup-footer" style="padding:10px; border-top:1px solid #D4AF37; margin-top:10px;"></div>
+    </div>
+
+    <canvas id="butterfly-canvas"></canvas>
+
+    <script>
+        // ========== CONFIGURAÇÃO GLOBAL (mantida igual) ==========
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        let allDecks = [], pdfDeckSelecionado = "", deckSelecionado = "", currentFlashcardWord = null, flashcardDeckNome = "", flashcardNotas = "";
+        let flashcards = [], flashcardIndex = 0, revisaoModo = 'quiz', quizPalavras = [], quizIndex = 0, quizOpcoesAtuais = [], quizRespostaCorreta = "", aguardandoResposta = true, dictationMode = 'translation';
+        let acertosDeckChart = null, evolucaoPontosChart = null, graficoChart = null;
+        let revisoesHoje = 0; const META_DIARIA = 10; let ultimaDataRegistro = localStorage.getItem('ultimaDataRevisao') || '';
+
+        function carregarProgressoDiario() { const hoje = new Date().toDateString(); if (ultimaDataRegistro !== hoje) { revisoesHoje = 0; localStorage.setItem('revisoesHoje','0'); localStorage.setItem('ultimaDataRevisao',hoje); } else revisoesHoje = parseInt(localStorage.getItem('revisoesHoje')||'0'); atualizarBarraProgresso(); }
+        function registrarRevisaoDiaria() { const hoje = new Date().toDateString(); if (ultimaDataRegistro !== hoje) revisoesHoje = 0; revisoesHoje++; localStorage.setItem('revisoesHoje',revisoesHoje); localStorage.setItem('ultimaDataRevisao',hoje); atualizarBarraProgresso(); if (revisoesHoje >= META_DIARIA) { canvasConfetti({ particleCount:150, spread:70, origin:{y:0.6} }); const msg = document.createElement('div'); msg.textContent = '🎉 Parabéns! Você atingiu a meta diária de revisões! 🎉'; msg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:#D4AF37; color:#0f172a; padding:10px 20px; border-radius:40px; font-weight:bold; z-index:9999'; document.body.appendChild(msg); setTimeout(()=>msg.remove(),4000); } }
+        function atualizarBarraProgresso() { const percent = (revisoesHoje/META_DIARIA)*100; const fill = document.getElementById('goal-progress-fill'); if(fill) fill.style.width = percent+'%'; const countText = document.getElementById('goal-count-text'); if(countText) countText.textContent = `${revisoesHoje}/${META_DIARIA} revisões`; }
+
+        let recognition = null;
+        if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; recognition = new SpeechRecognition(); recognition.lang = 'en-US'; recognition.interimResults = false; recognition.maxAlternatives = 1; }
+        function iniciarReconhecimentoVoz(palavraAlvo, elementoFeedbackId) { if (!recognition) { alert('Seu navegador não suporta reconhecimento de voz.'); return; } const feedbackSpan = document.getElementById(elementoFeedbackId); if (feedbackSpan) feedbackSpan.innerHTML = '🎙️ Ouvindo...'; recognition.onresult = (event) => { const falado = event.results[0][0].transcript.trim().toLowerCase(); const alvo = palavraAlvo.toLowerCase().replace(/[^\w]/g,''); const faladoLimpo = falado.replace(/[^\w]/g,''); const acertou = (faladoLimpo === alvo); if (feedbackSpan) { if(acertou) { feedbackSpan.innerHTML = '✅ Correto!'; feedbackSpan.className = 'speech-feedback correct'; } else { feedbackSpan.innerHTML = `❌ Você disse: "${falado}". Tente novamente.`; feedbackSpan.className = 'speech-feedback wrong'; } setTimeout(()=>{ feedbackSpan.innerHTML = ''; feedbackSpan.className = 'speech-feedback'; },3000); } }; recognition.onerror = () => { if(feedbackSpan){ feedbackSpan.innerHTML = '❌ Erro no reconhecimento.'; feedbackSpan.className = 'speech-feedback wrong'; setTimeout(()=>{ feedbackSpan.innerHTML = ''; },2000); } }; recognition.start(); }
+
+        const audioCache = JSON.parse(localStorage.getItem('audioCache')||'{}');
+        async function tocarAudio(palavra) { const palavraLower = palavra.toLowerCase().replace(/[^\w]/g,''); if(audioCache[palavraLower]){ try{ const audio = new Audio(audioCache[palavraLower]); await audio.play(); return; } catch(e){ delete audioCache[palavraLower]; } } try{ const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(palavraLower)}`); if(res.ok){ const dados = await res.json(); for(let entrada of dados){ for(let fonetica of entrada.phonetics){ if(fonetica.audio && fonetica.audio.trim() !== ''){ let audioUrl = fonetica.audio; if(audioUrl.startsWith('//')) audioUrl = 'https:' + audioUrl; else if(!audioUrl.startsWith('http')) audioUrl = 'https://api.dictionaryapi.dev' + audioUrl; const audio = new Audio(audioUrl); await audio.play(); audioCache[palavraLower] = audioUrl; localStorage.setItem('audioCache',JSON.stringify(audioCache)); return; } } } } } catch(e){} if('speechSynthesis' in window){ window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(palavraLower); utterance.lang = 'en-US'; utterance.rate = 0.9; setTimeout(()=>window.speechSynthesis.speak(utterance),50); } else alert('Seu navegador não suporta áudio.'); }
+        function falarFrase(frase){ if('speechSynthesis' in window){ window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(frase); utterance.lang = 'en-US'; utterance.rate = 0.9; window.speechSynthesis.speak(utterance); } else alert('Seu navegador não suporta síntese de voz.'); }
+
+        function showFeedback(msg, tipo, motivo = '') {
+            const div = document.createElement('div');
+            div.textContent = motivo ? `${msg}: ${motivo}` : msg;
+            div.className = `feedback-message feedback-${tipo}`;
+            document.body.appendChild(div);
+            setTimeout(()=>div.remove(), 3000);
+        }
+
+        // ========== FUNÇÕES DE FRASES E REGRAS ==========
+        async function salvarFrase(frase, deckId, palavraOrigem=null){
+            const deckIdEnviar = (deckId === 'none' || deckId === '' || deckId === null) ? null : parseInt(deckId);
+            try{
+                const res = await fetch('/salvar-frase',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({ frase, deck_id: deckIdEnviar, palavra_origem: palavraOrigem })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showFeedback('Frase salva', 'success');
+                    if (document.getElementById('escrita-tab').classList.contains('active')) {
+                        const deckSelecionado = document.getElementById('escrita-deck-select').value;
+                        if(deckSelecionado) carregarListaFrases(deckSelecionado);
+                    }
+                } else if(res.status === 409) {
+                    let msg = data.detail || 'Frase já existe neste deck.';
+                    showFeedback('Frase duplicada', 'error', msg);
+                } else {
+                    showFeedback('Erro ao salvar', 'error', data.message || 'erro desconhecido');
+                }
+            } catch(e){
+                showFeedback('Erro ao salvar', 'error', e.message);
+            }
+        }
+
+        async function carregarFrasesPorDeck(deckId){
+            let url = '/frases-por-deck/';
+            if (deckId === 'all') url += 'all';
+            else if (deckId === 'none') url += 'none';
+            else url += deckId;
+            const res = await fetch(url);
+            return res.json();
+        }
+
+        async function salvarRegra(padrao,sugestao,explicacao){ const res = await fetch('/adicionar-regra',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({padrao,sugestao,explicacao})}); return res.json(); }
+        async function listarRegras(){ const res = await fetch('/regras-gramaticais'); return res.json(); }
+        async function verificarComRegrasDB(frase){ const res = await fetch('/verificar-regras',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({frase})}); return res.json(); }
+
+        function verificarOffline(frase){
+            const erros = []; const lower = frase.toLowerCase();
+            if(lower.includes('yesterday') && /\b(go|play|eat|see|do|have)\b/i.test(frase)) erros.push({erro:'Uso de "yesterday" com verbo no presente', sugestao:'Use o passado simples (went, played, ate, saw, did, had)'});
+            if(/\b(he|she|it)\s+(\w+[^s])\b/i.test(frase) && !/\b(doesn't|don't)\b/i.test(frase)) erros.push({erro:'Verbo na terceira pessoa sem "s"', sugestao:'Adicione "s" ou "es" (he goes, she plays)'});
+            if(/\ba\s+[aeiou]/i.test(frase) && !/\ban\s+[aeiou]/i.test(frase)) erros.push({erro:'Uso de "a" antes de vogal', sugestao:'Use "an" (an apple, an hour)'});
+            return erros;
+        }
+
+        function mostrarComparacao(escrita,original){
+            const palavrasEscrita = escrita.toLowerCase().split(/\s+/);
+            const palavrasOriginal = original.toLowerCase().split(/\s+/);
+            let resultado = '<strong>🔎 Comparação palavra a palavra:</strong><br><div style="font-family: monospace; font-size: 1rem;">';
+            for(let i=0;i<Math.max(palavrasEscrita.length,palavrasOriginal.length);i++){
+                if(i>=palavrasOriginal.length) resultado += `<span style="color:#e74c3c;">${palavrasEscrita[i]||''}</span> `;
+                else if(i>=palavrasEscrita.length) resultado += `<span style="color:#f39c12;">[falta: ${palavrasOriginal[i]}]</span> `;
+                else if(palavrasEscrita[i]===palavrasOriginal[i]) resultado += `<span style="color:#2ecc71;">${palavrasEscrita[i]}</span> `;
+                else resultado += `<span style="color:#e74c3c; text-decoration:underline;">${palavrasEscrita[i]}</span><span style="color:#f1c40f;"> (→ ${palavrasOriginal[i]})</span> `;
+            }
+            resultado += '</div>';
+            return resultado;
+        }
+
+        function criarLacunas(container, fraseOriginal){
+            const palavras = fraseOriginal.split(/\s+/);
+            container.innerHTML = '';
+            palavras.forEach((palavra,idx)=>{
+                const span = document.createElement('span');
+                span.textContent = palavra+' ';
+                span.style.cursor = 'pointer';
+                span.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                span.style.borderRadius = '12px';
+                span.style.padding = '2px 6px';
+                span.style.margin = '2px';
+                span.onclick = () => {
+                    if(span.classList.contains('lacuna')){
+                        span.innerHTML = palavra+' ';
+                        span.classList.remove('lacuna');
+                        span.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                    } else {
+                        span.innerHTML = `<input type="text" class="palavra-lacuna-input" style="width:80px;" placeholder="___" value="${palavra}"> `;
+                        span.classList.add('lacuna');
+                        span.style.backgroundColor = '#f39c12';
+                    }
+                };
+                container.appendChild(span);
+            });
+            const btnAplicar = document.createElement('button');
+            btnAplicar.textContent = 'Aplicar lacunas ao campo de escrita';
+            btnAplicar.className = 'btn-pequeno';
+            btnAplicar.style.marginTop = '10px';
+            btnAplicar.onclick = () => {
+                const inputs = container.querySelectorAll('.palavra-lacuna-input');
+                let textoFinal = '';
+                palavras.forEach((palavra,idx)=>{
+                    const input = inputs[idx];
+                    if(input) textoFinal += input.value+' ';
+                    else textoFinal += palavra+' ';
+                });
+                document.getElementById('frase-escrita').value = textoFinal.trim();
+            };
+            container.appendChild(btnAplicar);
+        }
+
+        // ========== FUNÇÕES DA ABA ESCRITA ==========
+        let fraseOriginalAtual = '';
+        let fraseAtualId = null;
+        let paginaAtual = 1;
+        let totalFrases = 0;
+        let deckAtualLista = '';
+        let buscaAtual = '';
+
+        async function carregarListaFrases(deckId, pagina = 1, busca = '') {
+            if (!deckId) return;
+            deckAtualLista = deckId;
+            paginaAtual = pagina;
+            buscaAtual = busca;
+            const url = `/frases-por-deck/${deckId}/paginado?pagina=${pagina}&por_pagina=10&busca=${encodeURIComponent(busca)}`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                totalFrases = data.total;
+                const container = document.getElementById('lista-frases-container');
+                if (!data.frases.length) {
+                    container.innerHTML = '<em>Nenhuma frase encontrada.</em>';
+                    document.getElementById('paginacao-container').innerHTML = '';
+                    return;
+                }
+                const frasesUnicas = [];
+                const textosVistos = new Set();
+                for (const f of data.frases) {
+                    if (!textosVistos.has(f.frase)) {
+                        textosVistos.add(f.frase);
+                        frasesUnicas.push(f);
+                    }
+                }
+                let html = '';
+                frasesUnicas.forEach(f => {
+                    html += `<div class="frase-lista-item" data-frase-id="${f.id}" data-frase-texto="${escapeHtml(f.frase)}">📌 ${escapeHtml(f.frase)}</div>`;
+                });
+                container.innerHTML = html;
+                document.querySelectorAll('.frase-lista-item').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const fraseTexto = el.getAttribute('data-frase-texto');
+                        const fraseId = el.getAttribute('data-frase-id');
+                        fraseOriginalAtual = fraseTexto;
+                        fraseAtualId = parseInt(fraseId);
+                        document.getElementById('frase-original-texto').innerText = fraseOriginalAtual;
+                        document.getElementById('frase-original-area').style.display = 'block';
+                        document.getElementById('frase-escrita').value = '';
+                        document.getElementById('resultado-correcao').style.display = 'none';
+                    });
+                });
+                const totalPaginas = Math.ceil(totalFrases / 10);
+                let pagHtml = '';
+                for (let i = 1; i <= totalPaginas; i++) {
+                    pagHtml += `<button class="pagina-btn" data-pagina="${i}" style="margin:2px;">${i}</button>`;
+                }
+                document.getElementById('paginacao-container').innerHTML = pagHtml;
+                document.querySelectorAll('.pagina-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        carregarListaFrases(deckAtualLista, parseInt(btn.dataset.pagina), buscaAtual);
+                    });
+                });
+            } catch (e) {
+                console.error('Erro ao carregar lista de frases:', e);
+            }
+        }
+
+        async function marcarFraseRevisao(fraseId, deckId) {
+            try {
+                await fetch('/frase-revisao', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ frase_id: fraseId, deck_id: deckId })
+                });
+            } catch(e) { console.warn(e); }
+        }
+
+        let filaFrasesRevisao = [];
+        let indiceFilaRevisao = 0;
+
+        async function carregarProximaFrase() {
+            const deckId = document.getElementById('escrita-deck-select').value;
+            if (!deckId) { alert('Selecione um deck'); return; }
+            let url = '/frases-revisao/';
+            if (deckId === 'all') url += 'all';
+            else if (deckId === 'none') url += 'none';
+            else url += deckId;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const frasesRev = data.frases || [];
+                if (frasesRev.length > 0) {
+                    if (filaFrasesRevisao.length === 0 || indiceFilaRevisao >= filaFrasesRevisao.length) {
+                        filaFrasesRevisao = frasesRev;
+                        indiceFilaRevisao = 0;
+                    }
+                    const fraseAtualRev = filaFrasesRevisao[indiceFilaRevisao];
+                    fraseOriginalAtual = fraseAtualRev.frase;
+                    fraseAtualId = fraseAtualRev.id;
+                    document.getElementById('frase-original-texto').innerText = fraseOriginalAtual;
+                    document.getElementById('frase-original-area').style.display = 'block';
+                    document.getElementById('frase-escrita').value = '';
+                    document.getElementById('resultado-correcao').style.display = 'none';
+                    indiceFilaRevisao++;
+                    if (indiceFilaRevisao >= filaFrasesRevisao.length) {
+                        filaFrasesRevisao = [];
+                        indiceFilaRevisao = 0;
+                    }
+                    return;
+                }
+            } catch(e) { console.warn(e); }
+            await carregarFraseAleatoriaDoDeck();
+        }
+
+        async function carregarFraseAleatoriaDoDeck(){
+            const deckId = document.getElementById('escrita-deck-select').value;
+            if(!deckId){ alert('Selecione um deck'); return; }
+            let frases = [];
+            if (deckId === 'all') {
+                const res = await fetch('/frases-por-deck/all');
+                frases = await res.json();
+            } else if (deckId === 'none') {
+                const res = await fetch('/frases-por-deck/none');
+                frases = await res.json();
+            } else {
+                const res = await fetch(`/frases-por-deck/${deckId}`);
+                frases = await res.json();
+            }
+            if(!frases.length){ alert('Nenhuma frase guardada neste deck. Vá ao PDF e salve algumas frases.'); return; }
+            const aleatoria = frases[Math.floor(Math.random() * frases.length)];
+            fraseAtualId = aleatoria.id;
+            fraseOriginalAtual = aleatoria.frase;
+            document.getElementById('frase-original-texto').innerText = fraseOriginalAtual;
+            document.getElementById('frase-original-area').style.display = 'block';
+            document.getElementById('frase-escrita').value = '';
+            document.getElementById('resultado-correcao').style.display = 'none';
+        }
+
+        function compararFraseEscrita(){
+            const escrita = document.getElementById('frase-escrita').value.trim();
+            if(!fraseOriginalAtual){ alert('Carregue uma frase primeiro.'); return; }
+            if(!escrita){ alert('Escreva algo para comparar.'); return; }
+            const comparacaoHtml = mostrarComparacao(escrita, fraseOriginalAtual);
+            const resultadoDiv = document.getElementById('resultado-correcao');
+            resultadoDiv.style.display = 'block';
+            resultadoDiv.innerHTML = comparacaoHtml;
+            const errosOffline = verificarOffline(escrita);
+            if(errosOffline.length){
+                resultadoDiv.innerHTML += '<hr><strong>⚠️ Possíveis erros gramaticais detectados (offline):</strong><br>';
+                errosOffline.forEach(e=>{ resultadoDiv.innerHTML += `<div class="correcao-item">❌ ${e.erro}<br>💡 ${e.sugestao}</div>`; });
+            }
+            verificarComRegrasDB(escrita).then(data=>{
+                if(data && data.erros && data.erros.length){
+                    resultadoDiv.innerHTML += '<hr><strong>📘 Regras gramaticais detectadas:</strong><br>';
+                    data.erros.forEach(r=>{ resultadoDiv.innerHTML += `<div class="correcao-item">❌ ${r.padrao}<br>💡 ${r.sugestao}<br><small>${r.explicacao}</small></div>`; });
+                }
+            }).catch(e=>console.warn('Erro ao verificar regras DB:',e));
+
+            if (escrita.toLowerCase() !== fraseOriginalAtual.toLowerCase() && fraseAtualId) {
+                const deckId = document.getElementById('escrita-deck-select').value;
+                marcarFraseRevisao(fraseAtualId, deckId === 'none' ? null : (deckId === 'all' ? null : parseInt(deckId)));
+            }
+        }
+
+        async function atualizarListaRegras(){
+            const container = document.getElementById('lista-regras');
+            container.innerHTML = '<em>Carregando regras...</em>';
+            const regras = await listarRegras();
+            if(!regras.length){ container.innerHTML = '<em>Nenhuma regra adicionada ainda.</em>'; return; }
+            container.innerHTML = '';
+            regras.forEach(regra=>{ const div = document.createElement('div'); div.className = 'regra-item'; div.innerHTML = `<strong>${regra.padrao}</strong> → ${regra.sugestao}<br><small>${regra.explicacao}</small>`; container.appendChild(div); });
+        }
+        async function adicionarRegra(){
+            const padrao = document.getElementById('nova-regra-padrao').value.trim(), sugestao = document.getElementById('nova-regra-sugestao').value.trim(), explicacao = document.getElementById('nova-regra-explicacao').value.trim();
+            if(!padrao || !sugestao){ alert('Preencha padrão e sugestão.'); return; }
+            await salvarRegra(padrao, sugestao, explicacao);
+            document.getElementById('nova-regra-padrao').value = ''; document.getElementById('nova-regra-sugestao').value = ''; document.getElementById('nova-regra-explicacao').value = '';
+            await atualizarListaRegras();
+        }
+
+        // ========== DECKS ==========
+        async function carregarDecks(){
+            try{
+                const data = await fetchAPI('/decks');
+                allDecks = data.decks || [];
+                const selects = ['deck-select','pdf-deck-select','rapida-deck-select'];
+                for(let id of selects){ const sel = document.getElementById(id); if(!sel) continue; sel.innerHTML = '<option value="">Nenhum deck selecionado</option>'; allDecks.forEach(d=>{ const opt = document.createElement('option'); opt.value = d.id; opt.textContent = d.nome; sel.appendChild(opt); }); }
+                const selectEscrita = document.getElementById('escrita-deck-select');
+                if(selectEscrita){
+                    selectEscrita.innerHTML = '<option value="">Selecione um deck</option>';
+                    selectEscrita.innerHTML += '<option value="all">📚 Todos os decks</option>';
+                    selectEscrita.innerHTML += '<option value="none">📄 Sem deck</option>';
+                    allDecks.forEach(d=>{ const opt = document.createElement('option'); opt.value = d.id; opt.textContent = d.nome; selectEscrita.appendChild(opt); });
+                }
+                log('Decks carregados');
+            } catch(e){ log('Erro carregar decks: '+e); }
+        }
+        async function criarDeck(origem){ const nome = prompt('Nome do novo deck:'); if(!nome || nome.trim()==='') return; await fetchAPI('/decks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nome.trim()})}); await carregarDecks(); if(origem==='pdf') document.getElementById('pdf-deck-select').value = pdfDeckSelecionado || ''; if(origem==='add') document.getElementById('deck-select').value = deckSelecionado || ''; }
+        async function editarDeck(origem){
+            let deckId = null;
+            if(origem==='pdf') deckId = document.getElementById('pdf-deck-select').value;
+            else if(origem==='add') deckId = document.getElementById('deck-select').value;
+            else if(origem==='rapida') deckId = document.getElementById('rapida-deck-select').value;
+            if(!deckId){ alert('Selecione um deck para renomear.'); return; }
+            const novoNome = prompt('Novo nome do deck:'); if(!novoNome || novoNome.trim()==='') return;
+            await fetchAPI(`/decks/${deckId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:novoNome.trim()})}); await carregarDecks();
+        }
+        async function excluirDeck(origem){
+            let deckId = null;
+            if(origem==='pdf') deckId = document.getElementById('pdf-deck-select').value;
+            else if(origem==='add') deckId = document.getElementById('deck-select').value;
+            else if(origem==='rapida') deckId = document.getElementById('rapida-deck-select').value;
+            if(!deckId){ alert('Selecione um deck para excluir.'); return; }
+            if(!confirm('Tem certeza? As palavras não serão apagadas.')) return;
+            await fetchAPI(`/decks/${deckId}`,{method:'DELETE'}); await carregarDecks();
+        }
+
+        // ========== FLASHCARDS (Revisão Espaçada) ==========
+        async function carregarFlashcardsPendentes(){
+            try{
+                const data = await fetchAPI('/revisar');
+                let palavras = data.palavras || [];
+                flashcards = palavras.map(p=>({ termo:p.termo, traducaoLimpa:extrairTraducao(p.traducao||''), contexto:p.contexto||'', deck_id:p.deck_id }));
+                flashcardIndex = 0;
+                if(flashcards.length===0){
+                    document.getElementById('flashcard-revisao').innerHTML = '<div class="empty-state">Nenhuma palavra pendente de revisão.</div>';
+                    document.getElementById('flashcard-status').innerHTML = '';
+                    return;
+                }
+                mostrarFlashcard();
+            } catch(e){ log('Erro ao carregar flashcards: '+e); document.getElementById('flashcard-revisao').innerHTML = '<div class="empty-state">Erro ao carregar revisões.</div>'; }
+        }
+
+        let palavraAtualRevisao = '';
+        function mostrarFlashcard(){
+            const container = document.getElementById('flashcard-revisao');
+            if(flashcardIndex >= flashcards.length){
+                container.innerHTML = '<div class="empty-state">Parabéns! Você revisou todas as palavras pendentes. 🎉</div>';
+                document.getElementById('flashcard-status').innerHTML = '';
+                return;
+            }
+            const palavra = flashcards[flashcardIndex];
+            palavraAtualRevisao = palavra.termo;
+            let deckNome = 'Sem deck';
+            if(palavra.deck_id){ const found = allDecks.find(d=>d.id===palavra.deck_id); if(found) deckNome = found.nome; }
+            flashcardDeckNome = deckNome;
+            (async()=>{
+                try{ const data = await fetchAPI(`/palavra/${encodeURIComponent(palavra.termo)}`); flashcardNotas = data.notas||''; } catch(e){ flashcardNotas=''; }
+                container.innerHTML = `
+                    <div class="flashcard-central">
+                        <div class="flashcard-card">
+                            <div class="flashcard-front">
+                                <h2>${capitalizarPrimeiraLetra(palavra.termo)} 
+                                    <button class="audio-btn" onclick="tocarAudio('${palavra.termo}')">Play</button>
+                                    <button class="btn-falar" onclick="iniciarReconhecimentoVoz('${palavra.termo}', 'feedback-front-${palavra.termo}')">Falar</button>
+                                    <span id="feedback-front-${palavra.termo}" class="speech-feedback"></span>
+                                </h2>
+                                <p class="contexto">${palavra.contexto || ''}</p>
+                            </div>
+                            <div class="flashcard-back">
+                                <h3>Tradução 
+                                    <button class="btn-falar" onclick="iniciarReconhecimentoVoz('${palavra.termo}', 'feedback-back-${palavra.termo}')">Falar</button>
+                                    <span id="feedback-back-${palavra.termo}" class="speech-feedback"></span>
+                                </h3>
+                                <p>${palavra.traducaoLimpa}</p>
+                            </div>
+                        </div>
+                        <div class="revisao-botoes">
+                            <button class="revisao-btn esqueci" data-qualidade="0">Esqueci</button>
+                            <button class="revisao-btn dificil" data-qualidade="2">Difícil</button>
+                            <button class="revisao-btn facil" data-qualidade="4">Fácil</button>
+                            <div class="menu-tres-pontos-rev"><i class="fas fa-ellipsis-h" title="Mais opções"></i>
+                                <div class="menu-dropdown-rev" id="dropdown-flashcard">
+                                    <div class="dropdown-info">Deck: <strong id="flashcard-deck-nome">${flashcardDeckNome}</strong></div>
+                                    <div class="dropdown-mover"><label>Mover para deck:</label><input type="text" id="mover-deck-input" placeholder="Digite o nome do deck..." autocomplete="off"><div id="sugestoes-deck" class="sugestoes-deck"></div></div>
+                                    <div class="dropdown-anotacoes"><label>Anotações:</label><textarea id="flashcard-notas" rows="2">${flashcardNotas}</textarea><button id="salvar-notas-btn" class="btn-pequeno">Salvar</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                const card = container.querySelector('.flashcard-card');
+                card.addEventListener('click',(e)=>{ if(e.target.closest('.audio-btn')||e.target.closest('.menu-tres-pontos-rev')||e.target.closest('.btn-falar')) return; card.classList.toggle('flipped'); });
+                document.querySelectorAll('.revisao-btn').forEach(btn=>{
+                    btn.onclick = async()=>{
+                        const qualidade = parseInt(btn.dataset.qualidade);
+                        await fetchAPI('/revisar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:palavraAtualRevisao,qualidade})});
+                        alert('Revisão registrada!');
+                        registrarRevisaoDiaria();
+                        flashcardIndex++;
+                        mostrarFlashcard();
+                    };
+                });
+                const dots = container.querySelector('.fa-ellipsis-h');
+                const dropdown = document.getElementById('dropdown-flashcard');
+                dots.onclick = (e)=>{ e.stopPropagation(); dropdown.classList.toggle('show'); };
+                const moverInput = document.getElementById('mover-deck-input');
+                const sugestoesDiv = document.getElementById('sugestoes-deck');
+                moverInput.addEventListener('input',(e)=>{
+                    const texto = e.target.value.toLowerCase();
+                    sugestoesDiv.innerHTML = '';
+                    if(texto.length===0) return;
+                    const matches = allDecks.filter(d=>d.nome.toLowerCase().startsWith(texto));
+                    matches.forEach(deck=>{
+                        const div = document.createElement('div');
+                        div.className = 'sugestao-item';
+                        div.textContent = deck.nome;
+                        div.onclick = ()=>{
+                            moverInput.value = deck.nome;
+                            sugestoesDiv.innerHTML = '';
+                            fetchAPI('/associar-deck',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:palavraAtualRevisao,deck_id:deck.id})})
+                                .then(()=>{ alert(`Palavra movida para o deck "${deck.nome}"`); flashcardDeckNome = deck.nome; document.getElementById('flashcard-deck-nome').innerText = deck.nome; moverInput.value = ''; carregarFlashcardsPendentes(); })
+                                .catch(err=>alert('Erro ao mover: '+err));
+                        };
+                        sugestoesDiv.appendChild(div);
+                    });
+                });
+                const notasTextarea = document.getElementById('flashcard-notas');
+                const salvarNotasBtn = document.getElementById('salvar-notas-btn');
+                salvarNotasBtn.onclick = async()=>{ const novasNotas = notasTextarea.value; await fetchAPI('/atualizar-notas',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:palavraAtualRevisao,notas:novasNotas})}); alert('Anotações salvas!'); flashcardNotas = novasNotas; };
+                document.getElementById('flashcard-status').innerHTML = `${flashcardIndex+1}/${flashcards.length}`;
+            })();
+        }
+
+        async function buscarPalavraEmostrarFlashcard(termo){
+            if(!termo) return;
+            try{
+                const data = await fetchAPI(`/palavra/${encodeURIComponent(termo.toLowerCase())}`);
+                if(data){
+                    currentFlashcardWord = data;
+                    flashcardDeckNome = data.deck_id ? (allDecks.find(d=>d.id===data.deck_id)?.nome || 'Sem deck') : 'Sem deck';
+                    flashcardNotas = data.notas || '';
+                    renderizarFlashcardUnico(data);
+                } else alert('Palavra não encontrada no seu banco.');
+            } catch(e){ alert('Erro ao buscar palavra: '+e.message); }
+        }
+
+        function renderizarFlashcardUnico(palavra){
+            const container = document.getElementById('flashcard-revisao');
+            const traducaoLimpa = extrairTraducao(palavra.traducao||'');
+            container.innerHTML = `
+                <div class="flashcard-central">
+                    <div class="flashcard-card">
+                        <div class="flashcard-front">
+                            <h2>${capitalizarPrimeiraLetra(palavra.termo)} 
+                                <button class="audio-btn" onclick="tocarAudio('${palavra.termo}')">Play</button>
+                                <button class="btn-falar" onclick="iniciarReconhecimentoVoz('${palavra.termo}', 'feedback-front-unico')">Falar</button>
+                                <span id="feedback-front-unico" class="speech-feedback"></span>
+                            </h2>
+                            <p class="contexto">${palavra.contexto || ''}</p>
+                        </div>
+                        <div class="flashcard-back">
+                            <h3>Tradução
+                                <button class="btn-falar" onclick="iniciarReconhecimentoVoz('${palavra.termo}', 'feedback-back-unico')">Falar</button>
+                                <span id="feedback-back-unico" class="speech-feedback"></span>
+                            </h3>
+                            <p>${traducaoLimpa}</p>
+                        </div>
+                    </div>
+                    <div class="revisao-botoes">
+                        <button class="revisao-btn esqueci" data-qualidade="0">Esqueci</button>
+                        <button class="revisao-btn dificil" data-qualidade="2">Difícil</button>
+                        <button class="revisao-btn facil" data-qualidade="4">Fácil</button>
+                        <div class="menu-tres-pontos-rev"><i class="fas fa-ellipsis-h" title="Mais opções"></i>
+                            <div class="menu-dropdown-rev" id="dropdown-flashcard">
+                                <div class="dropdown-info">Deck: <strong id="flashcard-deck-nome">${flashcardDeckNome}</strong></div>
+                                <div class="dropdown-mover"><label>Mover para deck:</label><input type="text" id="mover-deck-input" placeholder="Digite o nome do deck..." autocomplete="off"><div id="sugestoes-deck" class="sugestoes-deck"></div></div>
+                                <div class="dropdown-anotacoes"><label>Anotações:</label><textarea id="flashcard-notas" rows="2">${flashcardNotas}</textarea><button id="salvar-notas-btn" class="btn-pequeno">Salvar</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const card = container.querySelector('.flashcard-card');
+            card.addEventListener('click',(e)=>{ if(e.target.closest('.audio-btn')||e.target.closest('.menu-tres-pontos-rev')||e.target.closest('.btn-falar')) return; card.classList.toggle('flipped'); });
+            document.querySelectorAll('.revisao-btn').forEach(btn=>{
+                btn.onclick = async()=>{
+                    const qualidade = parseInt(btn.dataset.qualidade);
+                    await fetchAPI('/revisar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:palavra.termo,qualidade})});
+                    alert('Revisão registrada!');
+                    registrarRevisaoDiaria();
+                    carregarFlashcardsPendentes();
+                };
+            });
+            const dots = container.querySelector('.fa-ellipsis-h');
+            const dropdown = document.getElementById('dropdown-flashcard');
+            dots.onclick = (e)=>{ e.stopPropagation(); dropdown.classList.toggle('show'); };
+            const moverInput = document.getElementById('mover-deck-input');
+            const sugestoesDiv = document.getElementById('sugestoes-deck');
+            moverInput.addEventListener('input',(e)=>{
+                const texto = e.target.value.toLowerCase();
+                sugestoesDiv.innerHTML = '';
+                if(texto.length===0) return;
+                const matches = allDecks.filter(d=>d.nome.toLowerCase().startsWith(texto));
+                matches.forEach(deck=>{
+                    const div = document.createElement('div');
+                    div.className = 'sugestao-item';
+                    div.textContent = deck.nome;
+                    div.onclick = ()=>{
+                        moverInput.value = deck.nome;
+                        sugestoesDiv.innerHTML = '';
+                        fetchAPI('/associar-deck',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:palavra.termo,deck_id:deck.id})})
+                            .then(()=>{ alert(`Palavra movida para o deck "${deck.nome}"`); flashcardDeckNome = deck.nome; document.getElementById('flashcard-deck-nome').innerText = deck.nome; moverInput.value = ''; carregarFlashcardsPendentes(); })
+                            .catch(err=>alert('Erro ao mover: '+err));
+                    };
+                    sugestoesDiv.appendChild(div);
+                });
+            });
+            const notasTextarea = document.getElementById('flashcard-notas');
+            const salvarNotasBtn = document.getElementById('salvar-notas-btn');
+            salvarNotasBtn.onclick = async()=>{ const novasNotas = notasTextarea.value; await fetchAPI('/atualizar-notas',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:palavra.termo,notas:novasNotas})}); alert('Anotações salvas!'); flashcardNotas = novasNotas; };
+        }
+
+        function extrairTraducao(textoBruto){
+            if(!textoBruto) return '';
+            let match = textoBruto.match(/📝 TRADUÇÃO:\s*(.+?)(\n|$)/);
+            if(match) return match[1].trim();
+            match = textoBruto.match(/tradução:\s*(.+?)(\n|$)/i);
+            if(match) return match[1].trim();
+            const linhas = textoBruto.split('\n').filter(l=>l.trim() && !l.match(/^[📖📝🗣️📄⚠️═─]/));
+            if(linhas.length) return linhas[0].trim();
+            return textoBruto.trim();
+        }
+
+        async function adicionarPalavra(){
+            const termo = document.getElementById('termo').value.trim();
+            const frase = document.getElementById('frase').value.trim();
+            const resultadoDiv = document.getElementById('form-resultado');
+            if(!termo){ resultadoDiv.innerHTML = '<div class="alerta">Digite um termo!</div>'; return; }
+            resultadoDiv.innerHTML = '<p class="loading">⏳ Traduzindo...</p>';
+            const body = { termo, frase };
+            if(deckSelecionado) body.deck_id = parseInt(deckSelecionado);
+            const data = await fetchAPI('/adicionar-palavra',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            if(data.existe){ resultadoDiv.innerHTML = `<div class="alerta">⚠️ ${data.mensagem}</div>`; }
+            else { resultadoDiv.innerHTML = `<div class="resultado-traducao"><strong>${termo}</strong> → ${extrairTraducao(data.dados.traducao)}</div>`; document.getElementById('termo').value = ''; document.getElementById('frase').value = ''; carregarFlashcardsPendentes(); }
+        }
+
+        // ========== PDF (ESCALA 2.5 + IMAGEM NÍTIDA + PARÁGRAFOS CORRIGIDOS) ==========
+        document.getElementById('pdf-upload').addEventListener('change', async(e)=>{
+            const file = e.target.files[0];
+            if(!file) return;
+            const container = document.getElementById('pdf-pages-container');
+            container.innerHTML = '<p class="loading">📖 Carregando PDF...</p>';
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const totalPages = pdf.numPages;
+            container.innerHTML = '';
+            for(let i=1;i<=totalPages;i++){
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 2.5 });
+                const canvas = document.createElement('canvas');
+                canvas.className = 'pagina-pdf';
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.style.maxWidth = '100%';
+                canvas.style.height = 'auto';
+                canvas.style.imageRendering = 'auto';
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext:ctx, viewport }).promise;
+                const textContent = await page.getTextContent();
+                
+                const items = textContent.items;
+                const sorted = [...items].sort((a, b) => {
+                    const yA = Math.round(a.transform[5]);
+                    const yB = Math.round(b.transform[5]);
+                    if (Math.abs(yA - yB) > 2) return yA - yB;
+                    return a.transform[4] - b.transform[4];
+                });
+                
+                let linhas = [];
+                let linhaAtual = [];
+                let ultimoY = null;
+                for (const item of sorted) {
+                    const y = Math.round(item.transform[5]);
+                    if (ultimoY !== null && Math.abs(y - ultimoY) > 3) {
+                        if (linhaAtual.length > 0) {
+                            linhas.push(linhaAtual.map(it => it.str).join(' '));
+                            linhaAtual = [];
+                        }
+                    }
+                    linhaAtual.push(item);
+                    ultimoY = y;
+                }
+                if (linhaAtual.length > 0) {
+                    linhas.push(linhaAtual.map(it => it.str).join(' '));
+                }
+                
+                let paragrafos = [];
+                let paraAtual = [];
+                for (let j = 0; j < linhas.length; j++) {
+                    const linha = linhas[j].trim();
+                    if (linha === '') {
+                        if (paraAtual.length > 0) {
+                            paragrafos.push(paraAtual.join(' '));
+                            paraAtual = [];
+                        }
+                        continue;
+                    }
+                    if (paraAtual.length === 0) {
+                        paraAtual.push(linha);
+                    } else {
+                        const ultima = paraAtual[paraAtual.length - 1];
+                        if (/[.!?]\s*$/.test(ultima) && /^[A-Z"“'‘]/.test(linha)) {
+                            paragrafos.push(paraAtual.join(' '));
+                            paraAtual = [linha];
+                        } else {
+                            paraAtual.push(linha);
+                        }
+                    }
+                }
+                if (paraAtual.length > 0) {
+                    paragrafos.push(paraAtual.join(' '));
+                }
+                if (paragrafos.length === 0) {
+                    const textoCompleto = linhas.join(' ').trim();
+                    if (textoCompleto) paragrafos.push(textoCompleto);
+                }
+                
+                const pageCard = document.createElement('div');
+                pageCard.className = 'pdf-page-card';
+                pageCard.appendChild(canvas);
+                const textDiv = document.createElement('div');
+                textDiv.className = 'pdf-texto-pagina';
+                
+                paragrafos.forEach(para => {
+                    if (para.trim()) {
+                        const p = document.createElement('p');
+                        const palavras = para.split(/(\s+)/);
+                        palavras.forEach(palavra => {
+                            let palavraTeste = palavra.replace(/^[^\w'-]+|[^\w'-]+$/g,'');
+                            if(palavraTeste.length>0 && /[a-zA-Z0-9]/.test(palavraTeste)){
+                                const span = document.createElement('span');
+                                span.className = 'word-clickable';
+                                span.textContent = palavra;
+                                span.onclick = (function(pal,el){ return function(event){ tocarAudio(pal); analisarPalavra(pal,event); }; })(palavraTeste,span);
+                                p.appendChild(span);
+                            } else {
+                                p.appendChild(document.createTextNode(palavra));
+                            }
+                        });
+                        textDiv.appendChild(p);
+                    }
+                });
+                pageCard.appendChild(textDiv);
+                container.appendChild(pageCard);
+            }
+        });
+
+        let ultimoSpanClicado = null;
+        function obterFraseDoParagrafo(spanElement){
+            let paragrafo = spanElement.closest('p');
+            if(!paragrafo) return '';
+            let texto = paragrafo.innerText.trim();
+            const indice = texto.indexOf(spanElement.innerText);
+            if(indice !== -1){
+                let inicio = texto.lastIndexOf('.',indice);
+                if(inicio === -1) inicio = 0;
+                else inicio += 1;
+                let fim = texto.indexOf('.',indice);
+                if(fim === -1) fim = texto.length;
+                else fim += 1;
+                texto = texto.substring(inicio,fim).trim();
+            }
+            return texto;
+        }
+
+        async function analisarPalavra(palavra, event){
+            if(event && event.target) ultimoSpanClicado = event.target;
+            const popup = document.getElementById('popup');
+            const content = document.getElementById('popup-content');
+            const footer = document.getElementById('popup-footer');
+            popup.classList.remove('hidden');
+            content.innerHTML = '<p class="loading">🔍 Analisando...</p>';
+            footer.innerHTML = '';
+            const deckId = document.getElementById('pdf-deck-select').value || null;
+            try{
+                const res = await fetch('/analisar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:palavra,frase:'',deck_id:deckId?parseInt(deckId):null})});
+                const data = await res.json();
+                let traducao = '';
+                if(data.origem === 'mysql' || data.origem === 'gemini') traducao = extrairTraducao(data.dados.traducao||'');
+                else traducao = data.erro || 'Erro';
+                let html = `<strong>${capitalizarPrimeiraLetra(palavra)}</strong> <button class="audio-btn" onclick="tocarAudio('${palavra}')">Play</button><br>`;
+                html += `<strong>Tradução:</strong> ${traducao}<br>`;
+                if(data.definicao) html += `<strong>Definição:</strong> ${data.definicao}<br>`;
+                if(data.exemplo) html += `<strong>Exemplo:</strong> ${data.exemplo}<br>`;
+                if(data.expressoes && data.expressoes.length) html += `<strong>Expressões:</strong> ${data.expressoes.map(e=>e.phrase).join(', ')}<br>`;
+                content.innerHTML = DOMPurify.sanitize(html);
+                const deckSelect = document.createElement('select');
+                deckSelect.id = 'popup-deck-select';
+                deckSelect.innerHTML = '<option value="none">Sem deck</option>';
+                allDecks.forEach(d=>{ const opt = document.createElement('option'); opt.value = d.id; opt.textContent = d.nome; deckSelect.appendChild(opt); });
+                const salvarFraseBtn = document.createElement('button');
+                salvarFraseBtn.textContent = '📚 Salvar esta frase neste deck';
+                salvarFraseBtn.className = 'btn-pequeno';
+                salvarFraseBtn.style.marginTop = '10px';
+                salvarFraseBtn.onclick = ()=>{
+                    if(!ultimoSpanClicado){ alert('Não foi possível identificar a frase.'); return; }
+                    const fraseCompleta = obterFraseDoParagrafo(ultimoSpanClicado);
+                    if(!fraseCompleta){ alert('Não foi possível extrair a frase.'); return; }
+                    const deckIdSel = deckSelect.value;
+                    salvarFrase(fraseCompleta, deckIdSel === 'none' ? null : deckIdSel, palavra);
+                };
+                footer.appendChild(deckSelect);
+                footer.appendChild(salvarFraseBtn);
+            } catch(e){ content.innerHTML = '<p style="color:red;">Erro ao analisar</p>'; }
+        }
+
+        // ========== SELEÇÃO DE TEXTO COM MOUSE ==========
+        document.addEventListener('mouseup', async () => {
+            const selectedText = window.getSelection().toString().trim();
+            if (!selectedText || selectedText.length < 2) return;
+            if (window.selectionTimeout) clearTimeout(window.selectionTimeout);
+            window.selectionTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch('/analisar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ termo: selectedText, frase: selectedText, deck_id: null })
+                    });
+                    const data = await res.json();
+                    const popup = document.getElementById('popup');
+                    const content = document.getElementById('popup-content');
+                    popup.classList.remove('hidden');
+                    let traducao = '';
+                    if (data.dados && data.dados.traducao) {
+                        const match = data.dados.traducao.match(/📝 TRADUÇÃO:\s*(.+?)(\n|$)/);
+                        traducao = match ? match[1].trim() : data.dados.traducao.split('\n')[0];
+                    } else if (data.erro) {
+                        traducao = data.erro;
+                    }
+                    content.innerHTML = `<strong>${escapeHtml(selectedText)}</strong><br><strong>Tradução:</strong> ${escapeHtml(traducao)}<br><button id="close-popup-inner" style="margin-top:10px; background:#c0392b; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Fechar</button>`;
+                    const closeBtn = document.getElementById('close-popup-inner');
+                    if (closeBtn) closeBtn.onclick = () => popup.classList.add('hidden');
+                } catch(e) { console.warn('Erro ao traduzir seleção:', e); }
+            }, 20);
+        });
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ========== DASHBOARD, PROGRESSO, ESTATÍSTICAS ==========
+        async function carregarDashboard(){
+            const dados = await fetchAPI('/dashboard?dias=30');
+            const labels = dados.map(d=>d.data.split('-')[2]+'/'+d.data.split('-')[1]);
+            const totais = dados.map(d=>d.total_revisoes);
+            const facilidades = dados.map(d=>d.media_facilidade);
+            const ctx = document.getElementById('grafico-revisoes').getContext('2d');
+            if(graficoChart) graficoChart.destroy();
+            graficoChart = new Chart(ctx,{ type:'bar', data:{ labels, datasets:[
+                { label:'Revisões', data:totais, backgroundColor:'rgba(192,57,43,0.9)', borderColor:'#c0392b', borderWidth:1, yAxisID:'y' },
+                { label:'Facilidade Média', data:facilidades, type:'line', borderColor:'#2c7a4d', backgroundColor:'rgba(44,122,77,0.1)', borderWidth:3, pointRadius:4, pointBackgroundColor:'#2c7a4d', tension:0.3, yAxisID:'y1' }
+            ] }, options:{ responsive:true, maintainAspectRatio:true, scales:{ y:{ beginAtZero:true, title:{ display:true, text:'Total de Revisões', color:'#111' }, ticks:{ color:'#111' }, grid:{ color:'rgba(0,0,0,0.1)' } }, y1:{ position:'right', beginAtZero:true, max:5, title:{ display:true, text:'Facilidade Média', color:'#111' }, ticks:{ color:'#111' }, grid:{ display:false } }, x:{ ticks:{ color:'#111' }, grid:{ color:'rgba(0,0,0,0.1)' } } }, plugins:{ legend:{ labels:{ color:'#111' } } } } });
+        }
+        async function carregarProgresso(){
+            const data = await fetchAPI('/progresso');
+            document.getElementById('p-pontos').textContent = data.pontos_total || 0;
+            document.getElementById('p-streak').textContent = data.streak_atual || 0;
+            document.getElementById('p-nivel').textContent = data.nivel || 1;
+            document.getElementById('p-revisoes').textContent = data.total_revisoes || 0;
+            const faltam = data.pontos_para_proximo_nivel || 100;
+            const proxNivel = (data.nivel||1)+1;
+            document.getElementById('p-proximo-nivel').style.display = 'block';
+            document.getElementById('p-faltam').textContent = faltam;
+            document.getElementById('p-nivel-seguinte').textContent = proxNivel;
+            const percentual = Math.round(((data.pontos_total%100)/100)*100);
+            document.getElementById('barra-nivel').style.width = percentual+'%';
+        }
+        async function carregarEstatisticasAvancadas(){
+            const deckData = await fetchAPI('/estatisticas-por-deck');
+            const labels = deckData.map(d=>d.deck_nome);
+            const acertos = deckData.map(d=>d.acertos);
+            const totais = deckData.map(d=>d.total_revisoes);
+            const ctx = document.getElementById('acertos-deck-chart').getContext('2d');
+            if(acertosDeckChart) acertosDeckChart.destroy();
+            acertosDeckChart = new Chart(ctx,{ type:'bar', data:{ labels, datasets:[
+                { label:'Acertos', data:acertos, backgroundColor:'rgba(39,174,96,0.9)', borderColor:'#27ae60', borderWidth:1 },
+                { label:'Total Revisões', data:totais, backgroundColor:'rgba(192,57,43,0.9)', borderColor:'#c0392b', borderWidth:1 }
+            ] }, options:{ responsive:true, maintainAspectRatio:true, scales:{ y:{ beginAtZero:true, ticks:{ color:'#111' }, grid:{ color:'rgba(0,0,0,0.1)' } }, x:{ ticks:{ color:'#111' }, grid:{ color:'rgba(0,0,0,0.1)' } } }, plugins:{ legend:{ labels:{ color:'#111' } } } } });
+            const pontosData = await fetchAPI('/evolucao-pontos');
+            const labels2 = pontosData.map(d=>d.data);
+            const pontos = pontosData.map(d=>d.pontos_acumulados);
+            const ctx2 = document.getElementById('evolucao-pontos-chart').getContext('2d');
+            if(evolucaoPontosChart) evolucaoPontosChart.destroy();
+            evolucaoPontosChart = new Chart(ctx2,{ type:'line', data:{ labels:labels2, datasets:[{ label:'Pontos Acumulados', data:pontos, borderColor:'#c0392b', backgroundColor:'rgba(192,57,43,0.1)', borderWidth:3, fill:true, pointRadius:4, pointBackgroundColor:'#c0392b', tension:0.3 }] }, options:{ responsive:true, maintainAspectRatio:true, scales:{ y:{ beginAtZero:true, ticks:{ color:'#111' }, grid:{ color:'rgba(0,0,0,0.1)' } }, x:{ ticks:{ color:'#111', rotation:45 }, grid:{ color:'rgba(0,0,0,0.1)' } } }, plugins:{ legend:{ labels:{ color:'#111' } } } } });
+        }
+
+        // ========== REVISÃO RÁPIDA ==========
+        function setRevisionMode(mode){ revisaoModo=mode; document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.toggle('active',btn.getAttribute('data-mode')===mode)); if(quizPalavras.length){ quizIndex=0; aguardandoResposta=true; if(revisaoModo==='quiz') mostrarPerguntaQuiz(); else mostrarPerguntaDictation(); } }
+        async function carregarRevisaoRapida(){
+            const deckId = document.getElementById('rapida-deck-select').value;
+            const url = deckId ? `/revisar?deck_id=${deckId}` : '/revisar';
+            const data = await fetchAPI(url);
+            let palavras = data.palavras || [];
+            quizPalavras = palavras.map(p=>({ termo:p.termo, traducao:capitalizarPrimeiraLetra(extrairTraducao(p.traducao||'')) })).filter(p=>p.traducao);
+            if(!quizPalavras.length){ document.getElementById('revision-area').innerHTML = '<p class="empty-state">Nenhuma palavra válida!</p>'; return; }
+            quizIndex=0; aguardandoResposta=true;
+            if(revisaoModo==='quiz') mostrarPerguntaQuiz(); else mostrarPerguntaDictation();
+        }
+        function mostrarPerguntaQuiz(){
+            if(quizIndex>=quizPalavras.length){ document.getElementById('revision-area').innerHTML = `<div class="quiz-concluido"><p>🎉 Parabéns! Completou o quiz!</p><button class="btn-reiniciar" onclick="carregarRevisaoRapida()">Responder Novamente</button></div>`; return; }
+            const atual = quizPalavras[quizIndex];
+            const termoCap = capitalizarPrimeiraLetra(atual.termo);
+            const traducaoCorreta = atual.traducao;
+            let outras = quizPalavras.filter((_,idx)=>idx!==quizIndex).map(p=>p.traducao);
+            outras = [...new Set(outras)];
+            let opcoesFalsas = outras.slice(0,2);
+            const FALLBACK = ["Bom","Mau","Rápido","Lento"];
+            while(opcoesFalsas.length<2) opcoesFalsas.push(FALLBACK[Math.floor(Math.random()*FALLBACK.length)]);
+            let opcoes = [traducaoCorreta, ...opcoesFalsas];
+            for(let i=opcoes.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opcoes[i],opcoes[j]] = [opcoes[j],opcoes[i]]; }
+            quizOpcoesAtuais = opcoes; quizRespostaCorreta = traducaoCorreta;
+            document.getElementById('revision-area').innerHTML = `
+                <div class="quiz-card">
+                    <div class="quiz-pergunta">${termoCap} <button class="audio-btn" onclick="tocarAudio('${atual.termo}')">Play</button></div>
+                    <div class="quiz-opcoes-grid">${opcoes.map(opt=>`<div class="quiz-opcao" data-valor="${opt.replace(/"/g,'&quot;')}">${opt}</div>`).join('')}</div>
+                    <div class="quiz-contador">${quizIndex+1}/${quizPalavras.length}</div>
+                    <div id="quiz-feedback"></div>
+                </div>
+            `;
+            document.querySelectorAll('.quiz-opcao').forEach(el=>el.addEventListener('click',()=>responderQuiz(el.getAttribute('data-valor'))));
+            aguardandoResposta=true;
+            tocarAudio(atual.termo);
+        }
+        async function responderQuiz(resposta){
+            if(!aguardandoResposta) return;
+            aguardandoResposta=false;
+            const atual = quizPalavras[quizIndex];
+            const correta = quizRespostaCorreta;
+            const feedbackDiv = document.getElementById('quiz-feedback');
+            const opcoesDiv = document.querySelectorAll('.quiz-opcao');
+            opcoesDiv.forEach(btn=>btn.classList.add('disabled'));
+            if(resposta===correta){
+                await fetchAPI('/revisar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:atual.termo,qualidade:3})});
+                feedbackDiv.innerHTML = '<span class="correto">✅ Correto!</span>';
+                opcoesDiv.forEach(btn=>{ if(btn.getAttribute('data-valor')===correta) btn.style.background="#27ae60"; });
+                registrarRevisaoDiaria();
+            } else {
+                await fetchAPI('/revisar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:atual.termo,qualidade:0})});
+                feedbackDiv.innerHTML = `<span class="errado">❌ Errado! Correto: "${correta}"</span>`;
+                opcoesDiv.forEach(btn=>{ if(btn.getAttribute('data-valor')===resposta) btn.style.background="#c0392b"; if(btn.getAttribute('data-valor')===correta) btn.style.background="#27ae60"; });
+                tocarAudio(atual.termo);
+            }
+            setTimeout(()=>{ quizIndex++; if(revisaoModo==='quiz') mostrarPerguntaQuiz(); else mostrarPerguntaDictation(); },1500);
+        }
+        function mostrarPerguntaDictation(){
+            if(quizIndex>=quizPalavras.length){ document.getElementById('revision-area').innerHTML = `<div class="quiz-concluido"><p>🎉 Parabéns! Completou o ditado!</p><button class="btn-reiniciar" onclick="carregarRevisaoRapida()">Responder Novamente</button></div>`; return; }
+            const atual = quizPalavras[quizIndex];
+            document.getElementById('revision-area').innerHTML = `
+                <div class="dictation-card">
+                    <div class="dictation-pergunta">Ouça a palavra:</div>
+                    <button class="audio-btn-grande" onclick="tocarAudio('${atual.termo}')">Play</button>
+                    <div class="dictation-mode-selector">
+                        <label><input type="radio" name="dictMode" value="translation" ${dictationMode==='translation'?'checked':''}> Escrever tradução</label>
+                        <label><input type="radio" name="dictMode" value="term" ${dictationMode==='term'?'checked':''}> Escrever palavra em inglês</label>
+                    </div>
+                    <input type="text" id="dictation-input" class="dictation-input" placeholder="Digite sua resposta">
+                    <button id="dictation-submit" class="btn-verificar">Verificar</button>
+                    <div class="dictation-contador">${quizIndex+1}/${quizPalavras.length}</div>
+                    <div id="dictation-feedback"></div>
+                </div>
+            `;
+            const input = document.getElementById('dictation-input');
+            const submit = document.getElementById('dictation-submit');
+            const radios = document.querySelectorAll('input[name="dictMode"]');
+            radios.forEach(r=>r.addEventListener('change',(e)=>dictationMode=e.target.value));
+            const verificar = async()=>{
+                if(!aguardandoResposta) return;
+                const resposta = input.value.trim();
+                if(!resposta) return;
+                aguardandoResposta=false;
+                input.disabled=true; submit.disabled=true;
+                const atual2 = quizPalavras[quizIndex];
+                const normalizar = (s)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+                let acertou = false;
+                if(dictationMode==='translation') acertou = normalizar(resposta)===normalizar(atual2.traducao);
+                else acertou = normalizar(resposta)===normalizar(atual2.termo);
+                const feedback = document.getElementById('dictation-feedback');
+                if(acertou){
+                    await fetchAPI('/revisar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:atual2.termo,qualidade:3})});
+                    feedback.innerHTML = '<span class="correto">✅ Correto!</span>';
+                    registrarRevisaoDiaria();
+                } else {
+                    await fetchAPI('/revisar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({termo:atual2.termo,qualidade:0})});
+                    const esperado = dictationMode==='translation' ? atual2.traducao : atual2.termo;
+                    feedback.innerHTML = `<span class="errado">❌ Errado! Correto: "${esperado}"</span>`;
+                    tocarAudio(atual2.termo);
+                }
+                setTimeout(()=>{ quizIndex++; aguardandoResposta=true; if(revisaoModo==='dictation') mostrarPerguntaDictation(); else mostrarPerguntaQuiz(); },1500);
+            };
+            submit.onclick = verificar;
+            input.addEventListener('keypress',(e)=>{ if(e.key==='Enter') verificar(); });
+            aguardandoResposta=true; input.focus();
+            tocarAudio(atual.termo);
+        }
+
+        // ========== NAVEGAÇÃO ==========
+        function openTab(tabId){
+            fecharPopup();
+            document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+            const targetTab = document.getElementById(tabId);
+            if(targetTab) targetTab.classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(link=>link.classList.remove('active'));
+            if(tabId !== 'progresso-tab' && tabId !== 'dashboard-tab' && tabId !== 'stats-tab'){
+                const activeLink = document.querySelector(`.nav-link[data-view="${tabId}"]`);
+                if(activeLink) activeLink.classList.add('active');
+            }
+            if(tabId === 'list-tab') carregarFlashcardsPendentes();
+            if(tabId === 'add-tab' || tabId === 'pdf-tab' || tabId === 'rapida-tab' || tabId === 'escrita-tab') carregarDecks();
+            if(tabId === 'progresso-tab') carregarProgresso();
+            if(tabId === 'dashboard-tab') carregarDashboard();
+            if(tabId === 'stats-tab') carregarEstatisticasAvancadas();
+            if(tabId === 'escrita-tab') {
+                atualizarListaRegras();
+                const deckSelecionado = document.getElementById('escrita-deck-select').value;
+                if(deckSelecionado) carregarListaFrases(deckSelecionado);
+            }
+            log(`Aba aberta: ${tabId}`);
+        }
+
+        function initNavigation(){
+            document.querySelectorAll('.nav-link[data-view]').forEach(link=>{
+                link.addEventListener('click',(e)=>{ e.preventDefault(); const view = link.getAttribute('data-view'); if(view) openTab(view); });
+            });
+            const dropdownBtn = document.querySelector('.dropdown-btn');
+            const dropdownContent = document.querySelector('.dropdown .dropdown-content');
+            if(dropdownBtn && dropdownContent){
+                dropdownBtn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); dropdownContent.style.display = dropdownContent.style.display==='block'?'none':'block'; });
+                document.addEventListener('click',(e)=>{ if(!e.target.closest('.dropdown')) dropdownContent.style.display = 'none'; });
+            }
+            const revisaoDropdownBtn = document.querySelector('.dropdown-btn-revisao');
+            const revisaoDropdownContent = document.getElementById('revisao-dropdown');
+            if(revisaoDropdownBtn && revisaoDropdownContent){
+                revisaoDropdownBtn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); revisaoDropdownContent.style.display = revisaoDropdownContent.style.display==='block'?'none':'block'; });
+                document.addEventListener('click',(e)=>{ if(!e.target.closest('.dropdown') && !e.target.closest('.dropdown-btn-revisao')) revisaoDropdownContent.style.display = 'none'; });
+            }
+        }
+
+        document.getElementById('btn-buscar-flash').addEventListener('click',()=>{ const termo = document.getElementById('busca-palavra-flash').value.trim(); if(termo) buscarPalavraEmostrarFlashcard(termo); });
+        document.getElementById('busca-palavra-flash').addEventListener('keypress',(e)=>{ if(e.key==='Enter'){ const termo = e.target.value.trim(); if(termo) buscarPalavraEmostrarFlashcard(termo); } });
+        document.getElementById('carregar-frase-deck')?.addEventListener('click',carregarFraseAleatoriaDoDeck);
+        document.getElementById('play-frase-original')?.addEventListener('click',()=>{ if(fraseOriginalAtual) falarFrase(fraseOriginalAtual); });
+        document.getElementById('criar-lacunas-btn')?.addEventListener('click',()=>{ if(!fraseOriginalAtual){ alert('Carregue uma frase primeiro.'); return; } const container = document.createElement('div'); container.id='lacunas-container-temp'; document.getElementById('frase-original-area').appendChild(container); criarLacunas(container,fraseOriginalAtual); });
+        document.getElementById('comparar-frase-btn')?.addEventListener('click',compararFraseEscrita);
+        document.getElementById('adicionar-regra-btn')?.addEventListener('click',adicionarRegra);
+        document.getElementById('proxima-frase-btn')?.addEventListener('click', carregarProximaFrase);
+        document.getElementById('buscar-frase-btn')?.addEventListener('click', () => {
+            const deckId = document.getElementById('escrita-deck-select').value;
+            if(!deckId) { alert('Selecione um deck'); return; }
+            const busca = prompt('Digite parte da frase que procura:');
+            if(busca !== null) carregarListaFrases(deckId, 1, busca);
+        });
+        document.getElementById('buscar-lista-btn')?.addEventListener('click', () => {
+            const deckId = document.getElementById('escrita-deck-select').value;
+            if(!deckId) { alert('Selecione um deck'); return; }
+            const busca = document.getElementById('busca-frases').value;
+            carregarListaFrases(deckId, 1, busca);
+        });
+        document.getElementById('escrita-deck-select')?.addEventListener('change', () => {
+            const deckId = document.getElementById('escrita-deck-select').value;
+            if(deckId) carregarListaFrases(deckId);
+        });
+
+        (async()=>{ await carregarDecks(); carregarProgressoDiario(); initNavigation(); openTab('list-tab'); })();
+
+        function fecharPopup(){ document.getElementById('popup').classList.add('hidden'); }
+        function log(msg){ console.log(msg); }
+        function capitalizarPrimeiraLetra(str){ if(!str) return ''; return str.charAt(0).toUpperCase()+str.slice(1); }
+        async function fetchAPI(url, options={}){ const res = await fetch(url,options); if(!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); }
+        window.onclick = (e)=>{ if(e.target.classList.contains('modal')) e.target.style.display='none'; if(e.target.id==='popup' && !e.target.closest('#popup-content')) fecharPopup(); };
+        const canvas = document.getElementById('butterfly-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let borboletas = [];
+        function criarBorboleta(x,y){ return { x, y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4-2, vida:100 }; }
+        document.addEventListener('click',(e)=>{ for(let i=0;i<5;i++) borboletas.push(criarBorboleta(e.clientX,e.clientY)); });
+        document.addEventListener('touchstart',(e)=>{ const touch=e.touches[0]; for(let i=0;i<5;i++) borboletas.push(criarBorboleta(touch.clientX,touch.clientY)); });
+        function animar(){ ctx.clearRect(0,0,canvas.width,canvas.height); for(let i=borboletas.length-1;i>=0;i--){ const b=borboletas[i]; b.x+=b.vx; b.y+=b.vy; b.vy+=0.1; b.vida--; if(b.vida<=0){ borboletas.splice(i,1); continue; } ctx.font='30px serif'; ctx.fillText('🦋',b.x,b.y); } requestAnimationFrame(animar); }
+        animar();
+    </script>
+</body>
+</html>

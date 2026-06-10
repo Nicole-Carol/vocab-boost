@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English PDF Reader - Offline</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Georgia', 'Times New Roman', serif; 
+            background: #e8e0d5; 
+            color: #2c3e50;
+        }
+        
+        /* OFFLINE STATUS */
+        #offline-badge {
+            display: none;
+            background: #e74c3c;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+        }
+        #offline-badge.show { display: block; }
+        
+        .topbar {
+            background: #2c3e50;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 3px solid #c0392b;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .topbar input[type="file"] {
+            padding: 10px 20px;
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .topbar input[type="file"]:hover { background: #e74c3c; }
+        .topbar span {
+            color: #ecf0f1;
+            font-size: 14px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+        
+        #pdf-container {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 20px;
+            background: #d5c9b5;
+        }
+        
+        .pagina-pdf {
+            background: white;
+            margin: 0 auto 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: block;
+            border-radius: 3px;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .texto-paragrafos {
+            background: #fdfaf3;
+            padding: 25px 35px;
+            margin: 10px auto;
+            max-width: 800px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #c0392b;
+        }
+        .texto-paragrafos p {
+            margin-bottom: 15px;
+            line-height: 1.9;
+            text-indent: 25px;
+            font-size: 15px;
+            color: #2c3e50;
+        }
+        
+        .word-highlight {
+            cursor: pointer;
+            background: #c0392b;
+            color: white;
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .word-highlight:hover { background: #e74c3c; padding: 2px 7px; }
+        
+        /* PALAVRAS JÁ TRADUZIDAS (CACHE) */
+        .word-cached {
+            cursor: pointer;
+            background: #27ae60;
+            color: white;
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-weight: 500;
+            border-bottom: 2px solid #1e8449;
+        }
+        .word-cached:hover { background: #2ecc71; }
+        
+        #popup {
+            position: fixed;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            width: 90%;
+            max-width: 420px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        #popup.hidden { display: none; }
+        
+        #popup-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        #close-popup {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        #close-popup:hover { color: #e74c3c; }
+        
+        #popup-content {
+            padding: 20px;
+            font-size: 15px;
+            line-height: 1.7;
+            max-height: 60vh;
+            overflow-y: auto;
+            color: #2c3e50;
+        }
+        .frase-destaque {
+            background: #fef5e7;
+            border-left: 4px solid #c0392b;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            color: #7d6608;
+            font-style: italic;
+            font-size: 14px;
+        }
+        
+        .loading { text-align: center; color: #c0392b; padding: 20px; font-style: italic; }
+        
+        /* RESPONSIVO PARA CELULAR */
+        @media (max-width: 768px) {
+            .topbar { padding: 10px 15px; }
+            .topbar span { font-size: 12px; }
+            .topbar input[type="file"] { font-size: 14px; padding: 8px 15px; }
+            .texto-paragrafos { padding: 15px 20px; margin: 5px; }
+            .texto-paragrafos p { font-size: 14px; text-indent: 15px; }
+            #popup {
+                right: 5px;
+                width: 95%;
+                max-width: none;
+            }
+        }
+        
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #e8e0d5; }
+        ::-webkit-scrollbar-thumb { background: #c0392b; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- BADGE OFFLINE -->
+    <div id="offline-badge">📵 Você está offline - Traduções do cache serão usadas</div>
+
+    <div class="topbar">
+        <input type="file" id="pdf-upload" accept="application/pdf">
+        <span>📖 Clique nas palavras vermelhas • <span style="color:#2ecc71;">Verdes</span> = já traduzidas</span>
+    </div>
+
+    <div class="container">
+        <div id="pdf-container">
+            <p style="text-align: center; color: #7f6e58; padding: 50px; font-style: italic; font-size: 18px;">
+                📁 Selecione um livro em PDF<br>
+                <small style="font-size: 14px;">Funciona offline depois de carregar!</small>
+            </p>
+        </div>
+    </div>
+
+    <div id="popup" class="hidden">
+        <div id="popup-header">
+            <strong>📚 Análise</strong>
+            <button id="close-popup">✕</button>
+        </div>
+        <div id="popup-content"></div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        let pdfDoc = null;
+        let textoCompleto = "";
+        
+        // ============ CACHE OFFLINE ============
+        // Salva traduções no localStorage do navegador
+        function salvarCache(palavra, traducao) {
+            const cache = JSON.parse(localStorage.getItem('traducoes_cache') || '{}');
+            cache[palavra.toLowerCase()] = {
+                traducao: traducao,
+                data: new Date().toISOString()
+            };
+            localStorage.setItem('traducoes_cache', JSON.stringify(cache));
+        }
+        
+        function buscarCache(palavra) {
+            const cache = JSON.parse(localStorage.getItem('traducoes_cache') || '{}');
+            return cache[palavra.toLowerCase()] || null;
+        }
+        
+        // Verificar se está online
+        function isOnline() {
+            return navigator.onLine;
+        }
+        
+        // Mostrar/esconder badge offline
+        window.addEventListener('online', () => {
+            document.getElementById('offline-badge').classList.remove('show');
+        });
+        window.addEventListener('offline', () => {
+            document.getElementById('offline-badge').classList.add('show');
+        });
+        
+        // ============ UPLOAD PDF ============
+        document.getElementById('pdf-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = '<p class="loading">📖 Carregando livro...</p>';
+            
+            // Salvar PDF no IndexedDB para acesso offline
+            if (window.indexedDB) {
+                const dbRequest = indexedDB.open('PDFStorage', 1);
+                dbRequest.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('pdfs')) {
+                        db.createObjectStore('pdfs');
+                    }
+                };
+                dbRequest.onsuccess = (event) => {
+                    const db = event.target.result;
+                    const tx = db.transaction('pdfs', 'readwrite');
+                    tx.objectStore('pdfs').put(file, 'ultimo_pdf');
+                };
+            }
+            
+            const arrayBuffer = await file.arrayBuffer();
+            pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
+            
+            container.innerHTML = '';
+            textoCompleto = '';
+            
+            // Carregar cache de traduções
+            const cache = JSON.parse(localStorage.getItem('traducoes_cache') || '{}');
+            
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                const page = await pdfDoc.getPage(i);
+                const viewport = page.getViewport({ scale: 1.2 });
+                
+                // Imagem da página
+                const canvas = document.createElement('canvas');
+                canvas.className = 'pagina-pdf';
+                const ctx = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                container.appendChild(canvas);
+                
+                // Texto da página
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                textoCompleto += pageText + '\n\n';
+                
+                const textoDiv = document.createElement('div');
+                textoDiv.className = 'texto-paragrafos';
+                
+                const paragrafos = pageText.split(/(?<=\.)\s+(?=[A-Z])/);
+                
+                paragrafos.forEach(paragrafo => {
+                    if (paragrafo.trim()) {
+                        const p = document.createElement('p');
+                        const palavras = paragrafo.split(/(\s+)/);
+                        
+                        palavras.forEach(palavra => {
+                            if (palavra.match(/^[a-zA-Z]+$/) && palavra.length > 2) {
+                                const span = document.createElement('span');
+                                
+                                // Verificar se já está no cache
+                                if (cache[palavra.toLowerCase()]) {
+                                    span.className = 'word-cached';
+                                    span.title = '✅ Já traduzida (clique para ver)';
+                                } else {
+                                    span.className = 'word-highlight';
+                                    span.title = '🔍 Clique para traduzir';
+                                }
+                                
+                                span.textContent = palavra;
+                                span.onclick = () => analisarPalavra(palavra);
+                                p.appendChild(span);
+                            } else {
+                                p.appendChild(document.createTextNode(palavra));
+                            }
+                        });
+                        
+                        textoDiv.appendChild(p);
+                    }
+                });
+                
+                container.appendChild(textoDiv);
+            }
+        });
+        
+        // Fechar popup
+        document.getElementById('close-popup').addEventListener('click', () => {
+            document.getElementById('popup').classList.add('hidden');
+        });
+        
+        // Analisar palavra (COM CACHE OFFLINE)
+        async function analisarPalavra(palavra) {
+            const popup = document.getElementById('popup');
+            const content = document.getElementById('popup-content');
+            
+            popup.classList.remove('hidden');
+            
+            // PRIMEIRO: Verificar cache local
+            const cacheHit = buscarCache(palavra);
+            if (cacheHit) {
+                const regex = new RegExp(`[^.!?]*\\b${palavra}\\b[^.!?]*[.!?]`, 'i');
+                const match = textoCompleto.match(regex);
+                const frase = match ? match[0].trim() : palavra;
+                
+                content.innerHTML = `
+                    <div class="frase-destaque">📄 "${frase}"</div>
+                    <div style="margin-top: 15px; color: #2c3e50;">${cacheHit.traducao}</div>
+                    <div style="margin-top: 10px; font-size: 11px; color: #999;">✅ Tradução offline • ${new Date(cacheHit.data).toLocaleDateString()}</div>
+                `;
+                return;
+            }
+            
+            // Se não tem cache e está offline
+            if (!isOnline()) {
+                content.innerHTML = '<p style="color:#e74c3c;">📵 Sem internet e palavra não está no cache offline.</p><p style="font-size:13px; color:#999;">Conecte-se à internet uma vez para traduzir esta palavra. Depois ficará salva!</p>';
+                return;
+            }
+            
+            // ONLINE: Buscar da API
+            content.innerHTML = '<p class="loading">🔍 Analisando...</p>';
+            
+            const regex = new RegExp(`[^.!?]*\\b${palavra}\\b[^.!?]*[.!?]`, 'i');
+            const match = textoCompleto.match(regex);
+            const frase = match ? match[0].trim() : palavra;
+            
+            try {
+                const response = await fetch('/analisar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ termo: palavra, frase: frase })
+                });
+                
+                const data = await response.json();
+                
+                let resultado = '';
+                if (data.origem === 'mysql') {
+                    resultado = data.dados.traducao || JSON.stringify(data.dados);
+                } else if (data.origem === 'gemini') {
+                    resultado = data.dados.traducao;
+                } else {
+                    resultado = data.erro || 'Erro';
+                }
+                
+                // SALVAR NO CACHE
+                salvarCache(palavra, resultado);
+                
+                content.innerHTML = `
+                    <div class="frase-destaque">📄 "${frase}"</div>
+                    <div style="margin-top: 15px; color: #2c3e50;">${resultado}</div>
+                    <div style="margin-top: 10px; font-size: 11px; color: #27ae60;">✅ Salva para acesso offline!</div>
+                `;
+                
+                // Atualizar cor da palavra na página
+                document.querySelectorAll('.word-highlight').forEach(el => {
+                    if (el.textContent.toLowerCase() === palavra.toLowerCase()) {
+                        el.className = 'word-cached';
+                        el.title = '✅ Já traduzida';
+                    }
+                });
+                
+            } catch (error) {
+                content.innerHTML = '<p style="color:red;">Erro: ' + error.message + '</p>';
+            }
+        }
+        
+        // REGISTRAR SERVICE WORKER PARA PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>

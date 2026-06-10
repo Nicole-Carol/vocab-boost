@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Gemini API</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        input, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button { 
+            padding: 10px 20px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; }
+        #resultado { 
+            margin-top: 20px; 
+            padding: 20px; 
+            background: white;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .loading { color: #007bff; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste da API Gemini</h1>
+    
+    <div class="container">
+        <label>Termo em inglês:</label>
+        <input id="termo" placeholder="Ex: break down" value="break down">
+        
+        <label>Frase completa:</label>
+        <textarea id="frase" placeholder="Ex: The car broke down on the highway" rows="3">The car broke down on the highway</textarea>
+        
+        <button onclick="testarAPI()">🔍 Analisar</button>
+        <span id="status"></span>
+        
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+    async function testarAPI() {
+        const btn = document.querySelector('button');
+        const resultado = document.getElementById('resultado');
+        const status = document.getElementById('status');
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Analisando...';
+        status.innerHTML = '<span class="loading">Processando requisição...</span>';
+        resultado.innerHTML = '';
+        
+        try {
+            const response = await fetch('http://localhost:8000/analisar', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    termo: document.getElementById('termo').value,
+                    frase: document.getElementById('frase').value
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.resultado) {
+                status.innerHTML = '<span class="success">✅ Funcionando!</span>';
+                resultado.innerHTML = data.resultado;
+            } else {
+                status.innerHTML = '<span class="error">❌ Erro na resposta</span>';
+                resultado.innerHTML = 'Resposta: ' + JSON.stringify(data, null, 2);
+            }
+        } catch (error) {
+            status.innerHTML = '<span class="error">❌ Erro de conexão</span>';
+            resultado.innerHTML = `
+                <strong>Erro:</strong> ${error.message}<br><br>
+                <strong>Possíveis causas:</strong><br>
+                1. Servidor não está rodando na porta 8000<br>
+                2. CORS bloqueando a requisição<br>
+                3. URL da API está incorreta
+            `;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Analisar';
+        }
+    }
+    </script>
+</body>
+</html>

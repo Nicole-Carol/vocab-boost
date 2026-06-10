@@ -1,0 +1,17 @@
+# Ignorar o ambiente virtual
+venv/
+
+# Variáveis de ambiente (contém senhas e chaves)
+.env
+
+# Arquivos de cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Backups gerados
+backups/
+
+# Arquivos específicos do sistema
+.DS_Store
+Thumbs.db
