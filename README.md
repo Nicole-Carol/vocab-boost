@@ -161,9 +161,4 @@ Contribuições são bem‑vindas! Sinta‑se à vontade para abrir issues ou pu
 
 📝 Licença
 Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
- Feito com 💙 e muitas horas de teste por Nicole caroline. 
-
-
-Substitua os placeholders pelo seu usuário do GitHub, nome e detalhes corretos. Depois é só colar no final do seu arquivo README.md. Se precisar de mais algum ajuste, é só pedir!
-
-
+ Feito com 💙 e muitas horas de teste por Nicole caroline.
